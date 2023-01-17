@@ -44,3 +44,15 @@ if [[ "$response" == *"${metadataKey}"* ]]; then
 else
   echo "Metadata not found"
 fi
+
+
+content_type="text/plain"
+date=`date -R`
+_signature="DELETE\n\n${content_type}\n${date}\n${resource}"
+signature=`echo -en ${_signature} | openssl sha1 -hmac ${s3_secret} -binary | base64`
+response=$(curl -vs  -X DELETE -H "Host: ${host}" \
+          -H "Date: ${date}" \
+          -H "Content-Type: ${content_type}" \
+          -H "Authorization: AWS ${s3_key}:${signature}" \
+          ${schema}://${host}${resource}  2>&1 >/dev/null)
+
